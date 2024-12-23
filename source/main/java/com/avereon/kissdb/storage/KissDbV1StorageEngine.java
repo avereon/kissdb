@@ -1,5 +1,8 @@
 package com.avereon.kissdb.storage;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,43 +10,68 @@ import java.util.UUID;
 
 public class KissDbV1StorageEngine implements StorageEngine {
 
-	private final Path storagePath;
+	private enum OperatingState {
+		STARTING,
+		STARTED,
+		STOPPING,
+		STOPPED
+	}
 
-	private boolean running;
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
-	public KissDbV1StorageEngine( Path storagePath ) {
-		this.storagePath = storagePath;
+	private final Path datastorePath;
+
+	private OperatingState state;
+
+	public KissDbV1StorageEngine( Path storagePath, String datastoreName ) {
+		this.datastorePath = storagePath.resolve( datastoreName );
 	}
 
 	@Override
-	public void start() throws IOException {
-		Files.createDirectories( storagePath );
-		running = true;
+	public void start() throws StorageException {
+		try {
+			state = OperatingState.STARTING;
+			Files.createDirectories( datastorePath );
+			state = OperatingState.STARTED;
+		} catch( IOException exception ) {
+			state = OperatingState.STOPPED;
+			throw new StorageException( "Unable to start storage engine", exception );
+		}
 	}
 
 	@Override
 	public boolean isRunning() {
-		return running;
+		return state == OperatingState.STARTED;
 	}
 
 	@Override
-	public void stop() throws IOException {
-		running = false;
+	public void stop() throws StorageException {
+			state = OperatingState.STOPPED;
 	}
 
 	@Override
-	public void read( UUID id ) {
+	@SuppressWarnings( "unchecked" )
+	public <T> T read( String table, UUID id ) throws StorageException {
+		// FIXME It is not correct to try and use the T value at runtime
+
+		try {
+			Path file = datastorePath.resolve( table ).resolve( id.toString() );
+			return MAPPER.readValue( file.toFile(), new TypeReference<T>() {} );
+		} catch( IOException exception ) {
+			throw new StorageException( "Unable to read object", exception );
+		}
+	}
+
+	@Override
+	public <T> T upsert( String table, T object ) {
 		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public <T> void upsert( T object ) {
+	public <T> T delete( String table, UUID id ) {
 		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void delete( UUID id ) {
-		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

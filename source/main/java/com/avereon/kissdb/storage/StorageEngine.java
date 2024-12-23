@@ -1,19 +1,19 @@
 package com.avereon.kissdb.storage;
 
-import java.io.IOException;
 import java.util.UUID;
 
 public interface StorageEngine {
 
-    void start() throws IOException;
+	void start() throws StorageException;
 
-    boolean isRunning();
+	boolean isRunning();
 
-    void stop() throws IOException;
+	void stop() throws StorageException;
 
-    void read(UUID id);
+	<T> T read( String table, UUID id ) throws StorageException;
 
-    <T> void upsert(T object);
+	<T> T upsert( String table, T object ) throws StorageException;
 
-    void delete(UUID id);
+	<T> T delete( String table, UUID id ) throws StorageException;
+
 }
