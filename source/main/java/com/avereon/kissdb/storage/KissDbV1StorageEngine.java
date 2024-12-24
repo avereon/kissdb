@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.UUID;
 
 public class KissDbV1StorageEngine implements StorageEngine {
@@ -51,12 +52,21 @@ public class KissDbV1StorageEngine implements StorageEngine {
 
 	@Override
 	@SuppressWarnings( "unchecked" )
-	public <T> T read( String table, UUID id ) throws StorageException {
+	public Map<String,Object> read( String table, UUID id ) throws StorageException {
+		try {
+			Path file = datastorePath.resolve( table ).resolve( id.toString() );
+			return MAPPER.readValue( file.toFile(), new TypeReference<>() {} );
+		} catch( IOException exception ) {
+			throw new StorageException( "Unable to read object", exception );
+		}
+	}
+
+	public <T> T read( String table, UUID id, Class<T> type ) throws StorageException {
 		// FIXME It is not correct to try and use the T value at runtime
 
 		try {
 			Path file = datastorePath.resolve( table ).resolve( id.toString() );
-			return MAPPER.readValue( file.toFile(), new TypeReference<T>() {} );
+			return MAPPER.readValue( file.toFile(), type );
 		} catch( IOException exception ) {
 			throw new StorageException( "Unable to read object", exception );
 		}

@@ -68,7 +68,7 @@ class KissV1StorageEngineTest {
 
 		// when
 		// Read the stored object file
-		BaseTestDataModel result = engine.read( tableName, id );
+		BaseTestDataModel result = engine.read( tableName, id, BaseTestDataModel.class );
 
 		// then
 		// Assert that the read object values are correct
