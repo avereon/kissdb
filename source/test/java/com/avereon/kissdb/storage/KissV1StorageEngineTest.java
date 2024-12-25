@@ -9,10 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.io.IOUtil;
 
-import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,7 +60,7 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void read() throws Exception {
+	void get() throws Exception {
 		// given
 		// Create a stored object file
 		UUID id = UUID.randomUUID();
@@ -73,7 +71,7 @@ class KissV1StorageEngineTest {
 
 		// when
 		// Read the stored object file
-		TestIdentityModel result = engine.read( tableName, id, TestIdentityModel.class );
+		TestIdentityModel result = engine.get( tableName, id, TestIdentityModel.class );
 
 		// then
 		// Assert that the read object values are correct
@@ -82,12 +80,12 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void readWithNull() {
+	void getWithNull() {
 		// given
 		UUID id = null;
 
 		// when
-		Throwable throwable = catchThrowable(() -> engine.read( tableName, id, TestIdentityModel.class ));
+		Throwable throwable = catchThrowable(() -> engine.get( tableName, id, TestIdentityModel.class ));
 
 		// then
 		assertThat( throwable ).isNotNull();
@@ -96,15 +94,15 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void upsert() throws Exception {
+	void store() throws Exception {
 		// given
 		UUID id = UUID.randomUUID();
 		TestIdentityModel data = new TestIdentityModel();
 		data.setId( id );
 
 		// when
-		engine.upsert( tableName, data );
-		TestIdentityModel result = engine.read( tableName, id, TestIdentityModel.class );
+		engine.store( tableName, data );
+		TestIdentityModel result = engine.get( tableName, id, TestIdentityModel.class );
 
 		// then
 		assertThat( result ).isNotNull();
@@ -117,23 +115,23 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void upsertWithExisting() throws Exception {
+	void storeWithExisting() throws Exception {
 		// given
 		UUID id = UUID.randomUUID();
 		TestDataTypeModel data = new TestDataTypeModel();
 		data.setId( id );
 		data.setStringField( "original value" );
-		engine.upsert( tableName, data );
+		engine.store( tableName, data );
 
-		TestDataTypeModel initial = engine.read( tableName, id, TestDataTypeModel.class );
+		TestDataTypeModel initial = engine.get( tableName, id, TestDataTypeModel.class );
 		assertThat( initial ).isNotNull();
 		assertThat( initial.getId() ).isEqualTo( data.getId() );
 		assertThat( initial.getStringField() ).isEqualTo( data.getStringField() );
 
 		// when
 		data.setStringField( "updated value" );
-		engine.upsert( tableName, data );
-		TestDataTypeModel result = engine.read( tableName, id, TestDataTypeModel.class );
+		engine.store( tableName, data );
+		TestDataTypeModel result = engine.get( tableName, id, TestDataTypeModel.class );
 
 		// then
 		assertThat( result ).isNotNull();
@@ -150,12 +148,12 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void upsertWithNull() {
+	void storeWithNull() {
 		// given
 		TestIdentityModel data = null;
 
 		// when
-		Throwable throwable = catchThrowable(() -> engine.upsert( tableName, data ) );
+		Throwable throwable = catchThrowable(() -> engine.store( tableName, data ) );
 
 		// then
 		assertThat( throwable ).isNotNull();
@@ -164,12 +162,12 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void upsertWithNoIdentity() {
+	void storeWithNoIdentity() {
 		// given
 		TestNoIdentityModel data = new TestNoIdentityModel();
 
 		// when
-		Throwable throwable = catchThrowable(() -> engine.upsert( tableName, data ) );
+		Throwable throwable = catchThrowable(() -> engine.store( tableName, data ) );
 
 		// then
 		assertThat( throwable ).isNotNull();
@@ -178,20 +176,20 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void delete() throws Exception {
+	void remove() throws Exception {
 		// given
 		UUID id = UUID.randomUUID();
 		TestIdentityModel data = new TestIdentityModel();
 		data.setId( id );
-		engine.upsert( tableName, data );
+		engine.store( tableName, data );
 
-		TestIdentityModel initial = engine.read( tableName, id, TestIdentityModel.class );
+		TestIdentityModel initial = engine.get( tableName, id, TestIdentityModel.class );
 		assertThat( initial ).isNotNull();
 		assertThat( initial.getId() ).isEqualTo( data.getId() );
 
 		// when
-		engine.delete( tableName, id );
-		Throwable throwable =  catchThrowable(() -> engine.read( tableName, id, TestIdentityModel.class ));
+		engine.remove( tableName, id );
+		Throwable throwable =  catchThrowable(() -> engine.get( tableName, id, TestIdentityModel.class ));
 
 		// then
 		assertThat( throwable ).isNotNull();
@@ -202,12 +200,12 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void deleteWithNull() {
+	void removeWithNull() {
 		// given
 		UUID id = null;
 
 		// when
-		Throwable throwable = catchThrowable(() -> engine.delete( tableName, id ) );
+		Throwable throwable = catchThrowable(() -> engine.remove( tableName, id ) );
 
 		// then
 		assertThat( throwable ).isNotNull();
@@ -216,7 +214,7 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void readSupportedDataTypes() throws Exception {
+	void getWithSupportedDataTypes() throws Exception {
 		// given
 		// Create a stored object file
 		UUID id = UUID.randomUUID();
@@ -235,7 +233,7 @@ class KissV1StorageEngineTest {
 
 		// when
 		// Read the stored object file
-		TestDataTypeModel result = engine.read( tableName, id, TestDataTypeModel.class );
+		TestDataTypeModel result = engine.get( tableName, id, TestDataTypeModel.class );
 
 		// then
 		// Assert that the read object values are correct
@@ -251,7 +249,7 @@ class KissV1StorageEngineTest {
 	}
 
 	@Test
-	void upsertSupportedDataTypes() throws Exception {
+	void storeWithSupportedDataTypes() throws Exception {
 		// given
 		UUID id = UUID.randomUUID();
 		TestDataTypeModel data = new TestDataTypeModel();
@@ -265,7 +263,7 @@ class KissV1StorageEngineTest {
 		data.setUuidField( UUID.randomUUID() );
 
 		// when
-		TestDataTypeModel result = engine.upsert( tableName, data );
+		TestDataTypeModel result = engine.store( tableName, data );
 
 		// then
 		assertThat( result ).isNotNull();

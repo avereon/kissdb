@@ -20,12 +20,12 @@ public interface StorageEngine {
 	 * @return The object as a {@link Map}
 	 * @throws StorageException If anything goes wrong
 	 */
-	Map<String, Object> read( String table, UUID id ) throws StorageException;
+	Map<String, Object> get( String table, UUID id ) throws StorageException;
 
-	<T> T read( String table, UUID id, Class<T> type ) throws StorageException;
+	<T> T get( String table, UUID id, Class<T> type ) throws StorageException;
 
-	<T> T upsert( String table, T object ) throws StorageException;
+	<T> T store( String table, T object ) throws StorageException;
 
-	void delete( String table, UUID id ) throws StorageException;
+	void remove( String table, UUID id ) throws StorageException;
 
 }

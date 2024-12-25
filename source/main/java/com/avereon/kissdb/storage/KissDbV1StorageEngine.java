@@ -53,7 +53,7 @@ public class KissDbV1StorageEngine implements StorageEngine {
 	}
 
 	@Override
-	public Map<String, Object> read( String table, UUID id ) throws StorageException {
+	public Map<String, Object> get( String table, UUID id ) throws StorageException {
 		try {
 			Path file = datastorePath.resolve( table ).resolve( id.toString() );
 			return MAPPER.readValue( file.toFile(), new TypeReference<>() {} );
@@ -62,7 +62,7 @@ public class KissDbV1StorageEngine implements StorageEngine {
 		}
 	}
 
-	public <T> T read( String table, UUID id, Class<T> type ) throws StorageException {
+	public <T> T get( String table, UUID id, Class<T> type ) throws StorageException {
 		if( id == null ) throw new StorageException( "Id cannot be null" );
 
 		try {
@@ -73,7 +73,7 @@ public class KissDbV1StorageEngine implements StorageEngine {
 	}
 
 	@Override
-	public <T> T upsert( String table, T object ) throws StorageException {
+	public <T> T store( String table, T object ) throws StorageException {
 		if( object == null ) throw new StorageException( "Object cannot be null" );
 
 		// Get the object id
@@ -88,7 +88,7 @@ public class KissDbV1StorageEngine implements StorageEngine {
 	}
 
 	@Override
-	public void delete( String table, UUID id ) throws StorageException {
+	public void remove( String table, UUID id ) throws StorageException {
 		if( id == null ) throw new StorageException( "Id cannot be null" );
 		try {
 			Files.deleteIfExists( resolveObjectPath( table, id ) );
