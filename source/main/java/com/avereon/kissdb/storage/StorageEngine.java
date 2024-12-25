@@ -26,6 +26,6 @@ public interface StorageEngine {
 
 	<T> T upsert( String table, T object ) throws StorageException;
 
-	<T> T delete( String table, UUID id ) throws StorageException;
+	void delete( String table, UUID id ) throws StorageException;
 
 }
